@@ -1,0 +1,6 @@
+pydantic>=2.0
+python-dotenv>=1.0
+pandas>=2.0
+pyarrow>=14.0
+ntplib>=0.4.0
+requests>=2.0
