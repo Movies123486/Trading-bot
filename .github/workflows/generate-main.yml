@@ -1,0 +1,47 @@
+name: Generate MAIN.md
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+    paths:
+      - prompt.md
+      - .github/workflows/generate-main.yml
+      - scripts/generate_main_md.py
+
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # allow committing back
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install --upgrade openai
+
+      - name: Generate MAIN.md
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-4o-mini
+          OUTPUT_PATH: MAIN.md
+          PROMPT_FILE: prompt.md
+        run: python scripts/generate_main_md.py
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add MAIN.md
+            git commit -m "chore: auto-generate MAIN.md"
+            git push
+          fi
